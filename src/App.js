@@ -8,39 +8,74 @@ export default function History() {
   // currentIndex在两种情况下会发生变化
   // 1.boardClick + 2.buttonClick
   const [currentIndex, setCurrentIndex] = useState(0);
+
   const [isSort, setIsSort] = useState(true);
+  // 控制子组件X/O的指针 isNext=> true => X
+  const isNext = isSort
+    ? !(currentIndex % 2)
+    : historyValue.length % 2
+    ? !(currentIndex % 2)
+    : currentIndex % 2;
+  // if (isSort) {
+  //   isNext = !(currentIndex % 2)
+  // } else if(historyValue.length % 2) {
+  //   isNext = !(currentIndex % 2)
+  // } else {
+  //   isNext = currentIndex % 2
+  // }
+
+  // historyValue.length % 2
   function handleHistoryClick(boardValue) {
-    const newHistoryValue = historyValue.slice(
-      isSort ? 0 : currentIndex,
-      isSort ? currentIndex + 1 : historyValue.length - 1
+    console.log(
+      [boardValue].concat(historyValue.slice(currentIndex, historyValue.length))
     );
-    // 这里有问题
-    isSort
-      ? newHistoryValue.push(boardValue)
-      : newHistoryValue.unshift(boardValue);
+    const newHistoryValue = isSort
+      ? historyValue.slice(0, currentIndex + 1).concat([boardValue])
+      : [boardValue].concat(
+          // The slice() method of Array instances returns a shallow copy of a portion of an array into a new array object selected from start to end (end not included)
+          historyValue.slice(currentIndex, historyValue.length)
+        );
+
     setCurrentIndex(isSort ? newHistoryValue.length - 1 : 0);
     setHistoryValue(newHistoryValue);
   }
+
   //右边的button渲染
   const renderRightButtons = () => {
     return historyValue.map((item, index) => {
-      const btnTContent =
-        index === 0 ? "Go to game start" : `Go to move #${index}`;
-      const btnFContent =
-        index === historyValue.length - 1
-          ? "Go to game start"
-          : `Go to move #${historyValue.length - index}`;
+      // const btnTContent =
+      //   index === 0 ? "Go to game start" : `Go to move #${index}`;
+      // const btnFContent =
+      //   index === historyValue.length - 1
+      //     ? "Go to game start"
+      //     : `Go to move #${historyValue.length - index}`;
+      // return (
+      //   <li key={item} className="button-row">
+      //     <span className="num">{index + 1}. </span>
+      //     <button className="btn" onClick={() => handleButtonClick(index)}>
+      //       {isSort ? btnTContent : btnFContent}
+      //     </button>
+      //     <div className="current-place">
+      //       {index === currentIndex
+      //         ? `You are at move #${historyValue.length - index}`
+      //         : ""}
+      //     </div>
+      //   </li>
+      // );
+      // 创建了一个指针
+      const moveNumber = isSort ? index : historyValue.length - 1 - index;
+      const buttonContent =
+        moveNumber === 0 ? "Go to game start" : `Go to move #${moveNumber}`;
+      const currentPlaceText =
+        index === currentIndex ? `You are at move #${moveNumber}` : "";
+
       return (
         <li key={item} className="button-row">
           <span className="num">{index + 1}. </span>
           <button className="btn" onClick={() => handleButtonClick(index)}>
-            {isSort ? btnTContent : btnFContent}
+            {buttonContent}
           </button>
-          <div className="current-place">
-            {index === currentIndex
-              ? `You are at move #${historyValue.length - index}`
-              : ""}
-          </div>
+          <div className="current-place">{currentPlaceText}</div>
         </li>
       );
     });
@@ -54,7 +89,7 @@ export default function History() {
     const newHistoryValue = [...historyValue].reverse();
     setIsSort(!isSort);
     setHistoryValue(newHistoryValue);
-    setCurrentIndex(historyValue.length - currentIndex - 1);
+    setCurrentIndex(newHistoryValue.length - currentIndex - 1);
   }
   return (
     <div className="history">
@@ -62,6 +97,7 @@ export default function History() {
         boardValue={historyValue[currentIndex]}
         onHistoryClick={handleHistoryClick}
         currentIndex={currentIndex}
+        isNext={isNext}
       />
       <ol className="buttons">
         <button className="sort-btn" onClick={handleSortClick}>
@@ -73,12 +109,10 @@ export default function History() {
   );
 }
 
-function Board({ boardValue, onHistoryClick, currentIndex }) {
+function Board({ boardValue, onHistoryClick, isNext }) {
   // console.log("Board重新渲染");
   // 1.构建一个3*3的棋盘
   // 2.让用户可以点击Square
-  // 控制子组件X/O的指针
-  const isNext = !(currentIndex % 2);
   // 状态提升,判断输赢
   // const [boardValue, setBoardValue] = useState();
   // 子组件onClick事件传回给父组件

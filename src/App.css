@@ -58,11 +58,6 @@ body {
   margin: 20px;
   padding: 0;
 }
-/* button {
-  margin: 0;
-  padding: 0;
-} */
-
 .square {
   width: 34px;
   height: 34px;
@@ -85,9 +80,14 @@ body {
 
 .history {
   display: flex;
-  width: 550px;
+  width: 700px;
 }
-
+.app {
+  width: 200px;
+}
+.mesg {
+  margin-left: 5px;
+}
 .button-row {
   margin-top: 2px;
   display: flex;
@@ -112,4 +112,8 @@ body {
 }
 .current-place {
   margin-left: 2px;
+}
+
+.winner {
+  background-color: #78b3ff;
 }

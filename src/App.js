@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import Square from "./Square";
 
@@ -16,19 +16,9 @@ export default function History() {
     : historyValue.length % 2
     ? !(currentIndex % 2)
     : currentIndex % 2;
-  // if (isSort) {
-  //   isNext = !(currentIndex % 2)
-  // } else if(historyValue.length % 2) {
-  //   isNext = !(currentIndex % 2)
-  // } else {
-  //   isNext = currentIndex % 2
-  // }
 
   // historyValue.length % 2
   function handleHistoryClick(boardValue) {
-    console.log(
-      [boardValue].concat(historyValue.slice(currentIndex, historyValue.length))
-    );
     const newHistoryValue = isSort
       ? historyValue.slice(0, currentIndex + 1).concat([boardValue])
       : [boardValue].concat(
@@ -43,25 +33,6 @@ export default function History() {
   //右边的button渲染
   const renderRightButtons = () => {
     return historyValue.map((item, index) => {
-      // const btnTContent =
-      //   index === 0 ? "Go to game start" : `Go to move #${index}`;
-      // const btnFContent =
-      //   index === historyValue.length - 1
-      //     ? "Go to game start"
-      //     : `Go to move #${historyValue.length - index}`;
-      // return (
-      //   <li key={item} className="button-row">
-      //     <span className="num">{index + 1}. </span>
-      //     <button className="btn" onClick={() => handleButtonClick(index)}>
-      //       {isSort ? btnTContent : btnFContent}
-      //     </button>
-      //     <div className="current-place">
-      //       {index === currentIndex
-      //         ? `You are at move #${historyValue.length - index}`
-      //         : ""}
-      //     </div>
-      //   </li>
-      // );
       // 创建了一个指针
       const moveNumber = isSort ? index : historyValue.length - 1 - index;
       const buttonContent =
@@ -82,9 +53,10 @@ export default function History() {
   };
   // button的点击事件
   function handleButtonClick(index) {
-    console.log("index", index);
+    //   console.log("index", index);
     setCurrentIndex(index);
   }
+
   function handleSortClick() {
     const newHistoryValue = [...historyValue].reverse();
     setIsSort(!isSort);
@@ -110,12 +82,28 @@ export default function History() {
 }
 
 function Board({ boardValue, onHistoryClick, isNext }) {
+  console.log("board");
   // console.log("Board重新渲染");
   // 1.构建一个3*3的棋盘
   // 2.让用户可以点击Square
   // 状态提升,判断输赢
   // const [boardValue, setBoardValue] = useState();
   // 子组件onClick事件传回给父组件
+  // 2024.6.26 用来记录当前的赢得line
+  const [winLine, setWinline] = useState([]);
+
+  // boardValue变化则需要进行判断
+  const drawMesg = !winLine.length ? "现在是平局" : "";
+  // const winRes = useMemo(() => , [boardValue])
+  useEffect(() => {
+    // 类型缩小
+    if (calcWinner(boardValue)) {
+      setWinline(calcWinner(boardValue).line);
+    } else {
+      setWinline([]);
+    }
+  }, [boardValue]);
+
   function handleSquareClick(index) {
     // 如果当前的square里面有值, 则无法进行后续操作
     // 如果有赢家了也无法再落子
@@ -133,6 +121,7 @@ function Board({ boardValue, onHistoryClick, isNext }) {
       for (let j = 0; j < 3; j++) {
         boardRow.push(
           <Square
+            isWinner={winLine?.includes(i * 3 + j)}
             key={i * 3 + j}
             value={boardValue[i * 3 + j]}
             onSquareClick={() => handleSquareClick(i * 3 + j)}
@@ -155,7 +144,7 @@ function Board({ boardValue, onHistoryClick, isNext }) {
     let topTip = "";
     const winner = calcWinner(boardValue);
     if (winner) {
-      topTip = `Winner: ${winner}`;
+      topTip = `Winner: ${winner?.firstSquare}`;
     } else {
       topTip = `Next player: ${isNext ? "X" : "O"}`;
     }
@@ -164,7 +153,10 @@ function Board({ boardValue, onHistoryClick, isNext }) {
 
   return (
     <div className="app">
-      <div className="tip">{renderTopTip()}</div>
+      <div className="tip">
+        <span>{renderTopTip()}</span>
+        <span className="mesg">{drawMesg}</span>
+      </div>
       <div>{renderBoard()}</div>
     </div>
   );
@@ -193,7 +185,7 @@ function calcWinner(board) {
       firstSquare === board[line[1]] &&
       firstSquare === board[line[2]]
     )
-      return firstSquare;
+      return { firstSquare, line };
   }
   return false;
 }

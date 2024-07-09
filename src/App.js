@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import "./App.css";
+import "./index.css";
 import Square from "./Square";
 
 export default function History() {
@@ -16,6 +16,8 @@ export default function History() {
     : historyValue.length % 2
     ? !(currentIndex % 2)
     : currentIndex % 2;
+
+  const isFull = historyValue.length === 10;
 
   // historyValue.length % 2
   function handleHistoryClick(boardValue) {
@@ -41,12 +43,12 @@ export default function History() {
         index === currentIndex ? `You are at move #${moveNumber}` : "";
 
       return (
-        <li key={item} className="button-row">
-          <span className="num">{index + 1}. </span>
-          <button className="btn" onClick={() => handleButtonClick(index)}>
+        <li key={item} className="mt-1 flex items-center ">
+          <span className="mr-1 text-right w-5">{index + 1}. </span>
+          <button className="w-30" onClick={() => handleButtonClick(index)}>
             {buttonContent}
           </button>
-          <div className="current-place">{currentPlaceText}</div>
+          <div className="ml-1">{currentPlaceText}</div>
         </li>
       );
     });
@@ -63,26 +65,39 @@ export default function History() {
     setHistoryValue(newHistoryValue);
     setCurrentIndex(newHistoryValue.length - currentIndex - 1);
   }
+  // restart game button click
+  function handleResClick() {
+    // 重置currentIndex和historyValue
+    setCurrentIndex(0);
+    setHistoryValue([Array(9).fill(null)]);
+  }
   return (
-    <div className="history">
+    <div className="bg-red-400 h-full flex flex-col items-center justify-center">
+      <div className="text-white font-bold text-2xl mb-1">Tic-Tac-Toe</div>
       <Board
         boardValue={historyValue[currentIndex]}
         onHistoryClick={handleHistoryClick}
         currentIndex={currentIndex}
         isNext={isNext}
+        isFull={isFull}
       />
-      <ol className="buttons">
-        <button className="sort-btn" onClick={handleSortClick}>
+      {/* <ol className="buttons">
+        <button className=" " onClick={handleSortClick}>
           {isSort ? "降序排列" : "升序排列"}
         </button>
         <div>{renderRightButtons()}</div>
-      </ol>
+      </ol> */}
+      <div
+        onClick={handleResClick}
+        className="text-white bg-teal-800 p-2 rounded mt-2 cursor-pointer"
+      >
+        Restart Game
+      </div>
     </div>
   );
 }
 
-function Board({ boardValue, onHistoryClick, isNext }) {
-  console.log("board");
+function Board({ boardValue, onHistoryClick, isNext, isFull }) {
   // console.log("Board重新渲染");
   // 1.构建一个3*3的棋盘
   // 2.让用户可以点击Square
@@ -93,8 +108,6 @@ function Board({ boardValue, onHistoryClick, isNext }) {
   const [winLine, setWinline] = useState([]);
 
   // boardValue变化则需要进行判断
-  const drawMesg = !winLine.length ? "现在是平局" : "";
-  // const winRes = useMemo(() => , [boardValue])
   useEffect(() => {
     // 类型缩小
     if (calcWinner(boardValue)) {
@@ -129,7 +142,7 @@ function Board({ boardValue, onHistoryClick, isNext }) {
         );
       }
       board.push(
-        <div key={i} className="board-row">
+        <div key={i} className="flex ">
           {boardRow}
         </div>
       );
@@ -140,24 +153,28 @@ function Board({ boardValue, onHistoryClick, isNext }) {
   // 顶部的提示
   // 赢了的话提示变成Winner: X
   // 下棋变成Next player: X
-  const renderTopTip = () => {
+  const renderBtTip = () => {
     let topTip = "";
     const winner = calcWinner(boardValue);
     if (winner) {
       topTip = `Winner: ${winner?.firstSquare}`;
     } else {
-      topTip = `Next player: ${isNext ? "X" : "O"}`;
+      // 当所有格子填满但是又没有人赢的时候是平局
+      // const winRes = useMemo(() => , [boardValue])
+      topTip = isFull ? "It Is A Draw" : `Next player: ${isNext ? "X" : "O"}`;
     }
     return topTip;
   };
 
   return (
-    <div className="app">
-      <div className="tip">
-        <span>{renderTopTip()}</span>
-        <span className="mesg">{drawMesg}</span>
+    <div className="flex flex-col  items-center">
+      <div className="">
+        <div className="h-5/6">{renderBoard()}</div>
       </div>
-      <div>{renderBoard()}</div>
+      <div className="text-white text-left">
+        <span>{renderBtTip()}</span>
+        {/* <span className="ml-1 flex">{drawMesg}</span> */}
+      </div>
     </div>
   );
 }

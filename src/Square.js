@@ -10,7 +10,9 @@ export default function Square({ onSquareClick, value, isWinner }) {
   }
   return (
     <button
-      className={`square ${isWinner ? "winner" : ""}`}
+      className={` ${
+        isWinner ? "bg-blue-400 !important" : ""
+      } text-3xl font-bold mr-1 mb-1 rounded w-16 h-16 bg-white  `}
       onClick={handleButtonClick}
     >
       {value}
